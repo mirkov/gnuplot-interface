@@ -1,0 +1,6 @@
+#+TITLE: gnuplot-interface package
+
+Low level interface to gnuplot that provides:
+- start of gnuplot process
+- passing raw gnuplot commands
+- windows management
