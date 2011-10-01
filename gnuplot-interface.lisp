@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2011-09-28 11:00:58EDT gnuplot-interface.lisp>
+;; Time-stamp: <2011-09-30 21:47:26 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -63,7 +63,8 @@ stream"
 				      :error :output)
 	*input* (sb-ext:process-input *gnuplot*)
 	*command* (make-broadcast-stream *input* *command-copy*))
-  #+(and clisp windows)
+  #+(or (and clisp linux)
+	(and clisp cygwin))
   (setf *gnuplot*
 	  (multiple-value-setq (*io* *input* *output*)
 	    (ext:make-pipe-io-stream *executable*
@@ -87,7 +88,7 @@ stream"
   (apply #'command command-and-args))
 
 (defun echo-command ()
-  "Return the last stored command"
+  "Return the last command sent to " 
   (get-output-stream-string *command-copy*))
 
 (defun gnuplot-echo-command ()

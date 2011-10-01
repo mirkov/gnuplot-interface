@@ -1,6 +1,30 @@
 #+TITLE: gnuplot-interface package
 
-Low level interface to gnuplot that provides:
+Low level interface to gnuplot that strives to provide:
 - start of gnuplot process
 - passing raw gnuplot commands
+- examining of sent commands 
 - windows management
+
+
+Typical usage:
+#+begin_src lisp
+(start-gnuplot) ;; starts the process
+(init-gnuplot) ;; initializes terminal
+(hello-world) ;;  test output
+(command "command-string") ;; send command to gnuplot
+(echo-command) ;; sell last sent command
+#+end_src
+
+
+
+The interface has been developed and tested on =sbcl= on Linux and
+=clisp= on cygwin.
+Operation on these platforms requires the following features to be declared
+- sbcl ::  =sbcl= 
+- clisp :: =clisp= and =linux= or =clisp= and =cygwin=
+  
+  
+Caveats:
+- stream plumbing is not thoroughly tested
+- windows management is also not thoroughly tested
