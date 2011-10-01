@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2011-09-30 21:47:26 gnuplot-interface.lisp>
+;; Time-stamp: <2011-09-30 21:58:14 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -84,24 +84,21 @@ stream"
   (format *command* "~%")
   (finish-output *command*))
 
-(defun gnuplot-command (&rest command-and-args)
-  (apply #'command command-and-args))
+(define-symbol-macro gnuplot-command command)
 
 (defun echo-command ()
   "Return the last command sent to " 
   (get-output-stream-string *command-copy*))
 
-(defun gnuplot-echo-command ()
-  (echo-command))
-
+(define-symbol-macro gnuplot-echo-command echo-command)
 (defun init-gnuplot ()
   (command "set terminal ~a" (alexandria:symbolicate *terminal*)))
 
 (defun hello-world ()
   "Throw test plot"
   (command "plot cos(x)"))
-(defun gnuplot-hello-world ()
-  (hello-world))
+
+(define-symbol-macro gnuplot-hello-world hello-world)
 
 
 
@@ -127,15 +124,11 @@ stream"
     (return-from test))
   (command "test"))
 
-
-(defun gnuplot-test ()
-  (test :terminal t))
-
+(define-symbol-macro gnuplot-test test)
 
 (defun reset ()
   (command "reset"))
-(defun gnuplot-reset ()
-  (reset))
+(define-symbol-macro gnuplot-reset reset)
 
 
 
