@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2011-09-30 21:58:14 gnuplot-interface.lisp>
+;; Time-stamp: <2011-10-04 13:18:49 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -85,6 +85,17 @@ stream"
   (finish-output *command*))
 
 (define-symbol-macro gnuplot-command command)
+
+(defun send-line (string)
+  "Pass a single line to the gnuplot stream"
+  (princ string *command*)
+  (finish-output *command*))
+
+(defun send-line-break ()
+  "Send a line break"
+  (princ (format nil "~%") *command*)
+  (finish-output *command*))
+
 
 (defun echo-command ()
   "Return the last command sent to " 
