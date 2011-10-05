@@ -1,0 +1,7 @@
+2011-10-05  Mirko Vukovic  <Mirko Vukovic <mirko.vukovic@us.tel.com>>
+
+	* package.lisp (#:gnuplot-interface): Updated documentation
+
+	* gnuplot-interface.lisp: I replaced the symbol macros for the
+	utility functions by function calls
+

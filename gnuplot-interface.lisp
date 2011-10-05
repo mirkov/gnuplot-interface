@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2011-10-04 13:18:49 gnuplot-interface.lisp>
+;; Time-stamp: <2011-10-05 12:41:07EDT gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -84,7 +84,8 @@ stream"
   (format *command* "~%")
   (finish-output *command*))
 
-(define-symbol-macro gnuplot-command command)
+(defun gnuplot-command (args)
+  (apply #'command args))
 
 (defun send-line (string)
   "Pass a single line to the gnuplot stream"
@@ -95,13 +96,19 @@ stream"
   "Send a line break"
   (princ (format nil "~%") *command*)
   (finish-output *command*))
+(defun send-line-to-gnuplot (string)
+  (send-line string))
+(defun send-line-break-to-gnuplot ()
+  (send-line-break))
 
 
 (defun echo-command ()
   "Return the last command sent to " 
   (get-output-stream-string *command-copy*))
 
-(define-symbol-macro gnuplot-echo-command echo-command)
+(defun gnuplot-echo-command ()
+  (echo-command))
+
 (defun init-gnuplot ()
   (command "set terminal ~a" (alexandria:symbolicate *terminal*)))
 
@@ -109,7 +116,8 @@ stream"
   "Throw test plot"
   (command "plot cos(x)"))
 
-(define-symbol-macro gnuplot-hello-world hello-world)
+(defun gnuplot-hello-world ()
+  (hello-world))
 
 
 
@@ -135,11 +143,13 @@ stream"
     (return-from test))
   (command "test"))
 
-(define-symbol-macro gnuplot-test test)
+(defun gnuplot-test (&rest keywords &key &allow-other-keys)
+  (apply #'test :allow-other-keys t keywords))
 
 (defun reset ()
   (command "reset"))
-(define-symbol-macro gnuplot-reset reset)
+(defun gnuplot-reset ()
+  (reset))
 
 
 
