@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2011-10-05 12:41:07EDT gnuplot-interface.lisp>
+;; Time-stamp: <2011-10-05 12:55:27EDT gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -85,7 +85,7 @@ stream"
   (finish-output *command*))
 
 (defun gnuplot-command (args)
-  (apply #'command args))
+  (funcall #'command args))
 
 (defun send-line (string)
   "Pass a single line to the gnuplot stream"
