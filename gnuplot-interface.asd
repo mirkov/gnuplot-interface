@@ -2,7 +2,7 @@
 
 (asdf:defsystem #:gnuplot-interface
   :serial t
-  :components ((:file "package")
+  :components ((:file "gnuplot-interface-package-def")
                (:file "gnuplot-interface")
 	       (:file "gnuplot-windows")
 (:file "examples"))

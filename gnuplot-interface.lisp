@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2011-10-05 12:55:27EDT gnuplot-interface.lisp>
+;; Time-stamp: <2012-02-25 19:35:16 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -26,21 +26,31 @@ gnuplot")
 (defvar *input* nil "gnuplot stream")
 (defvar *output* nil "gnuplot stream")
 (defvar *io* nil "gnuplot bidirectional stream")
-(defvar *error* nil "gnuplot stream")
-(defvar *windows* nil "a-list of gnuplot streams and names")
-(defvar *windows-history* nil "list of most recently used windows")
-;; my streams
+(defvar *error* nil "gnuplot error stream") ;; not used
 (defvar *command-copy* (make-string-output-stream)
   "Receives a copy of gnuplot commands")
 (defvar *command* nil "Stream used to send commands")
 
+;;; Variables for multiple windows.  Currently not used
+(defvar *windows* nil "a-list of gnuplot streams and names")
+(defvar *windows-history* nil "list of most recently used windows")
+;; my streams
 
-(defvar *executable* #+sbcl "/usr/local/bin/gnuplot" #+clisp "gnuplot"
+
+(defparameter *executable* #+sbcl "/usr/local/bin/gnuplot"
+	#+(and clisp (not wgnuplot)) "gnuplot"
+	#+(and clisp wgnuplot)
+	(getf (symbol-plist :wgnuplot) :executable)
   "Path to the executable")
-(defparameter *terminal* #+cysshd1 'wxt #-cysshd1 'x11)
+
+(defparameter *terminal*
+  #+(and cygwin (not wgnuplot)) 'x11
+  #+(and x11 (not cygwin)) 'wxt
+  #+(and clisp wgnuplot) 'wxt
+  "Default gnuplot terminal")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  #+clisp (when (string= "" (sys::getenv "DISPLAY"))
+  #+(and cygwin (not wgnuplot)) (when (string= "" (sys::getenv "DISPLAY"))
 	    (sys::setenv "DISPLAY" "127.0.0.1:0.0"))
   #+sbcl (unless (sb-ext:posix-getenv "DISPLAY")
 	   (warn "DISPLAY is not set.  X11 terminal will not be operational" ))
@@ -85,10 +95,15 @@ stream"
   (finish-output *command*))
 
 (defun gnuplot-command (args)
+  "Alias for COMMAND"
   (funcall #'command args))
 
 (defun send-line (string)
-  "Pass a single line to the gnuplot stream"
+  "Pass a single line to the gnuplot stream
+
+This command is used to pass complex, multi-line input to gnuplot.
+For it to take effect, the sequence of SEND-LINE commands must be
+finished by the SEND-LINE-BREAK command."
   (princ string *command*)
   (finish-output *command*))
 
