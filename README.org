@@ -1,29 +1,29 @@
-#+TITLE: gnuplot-interface package
+#+TITLE: =gnuplot=-interface package
 
-Low level interface to gnuplot that provides:
-- start of gnuplot process
-- passing raw gnuplot commands
+Low level interface to =gnuplot= that provides:
+- start of =gnuplot= process
+- passing raw =gnuplot= commands
 - examining of sent commands 
 
 
 Typical usage:
-#+begin_src lisp
+#+BEGIN_SRC lisp
 (start-gnuplot) ;; starts the process
 (init-gnuplot) ;; optional, to initializes terminal
 (hello-world) ;;  test output
 (command "command-string") ;; send command to gnuplot
 (echo-command) ;; sell last sent command
-#+end_src
+#+END_SRC
 
-For passing complex gnuplot commands that consists of many lines, use
+For passing complex =gnuplot= commands that consists of many lines, use
 the =send-line= and =send-line-break= commands
 
 The interface has been developed and tested on =sbcl= on Linux and
-=clisp= on cygwin.  On =cygwin= it works with cygwin's gnuplot and
-also the windows executable =wgnuplot=.
+=clisp= on Cygwin.  On Cygwin it works with Cygwin's =gnuplot= and
+also the Windows executable =wgnuplot=.
 
-For use of cygwin+wgnuplot, one needs to provide the
-feature :wgnuplot.  Furthermore, one needs to set :wgnuplot's property
+For use of Cygwin and =wgnuplot=, one needs to provide the feature
+=:wgnuplot=.  Furthermore, one needs to set =:wgnuplot='s property
 list as
 #+BEGIN_SRC lisp
 (setf (symbol-plist :wgnuplot)
