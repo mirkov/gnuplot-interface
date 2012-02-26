@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-02-26 00:06:33 gnuplot-interface.lisp>
+;; Time-stamp: <2012-02-26 09:57:55 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -75,21 +75,24 @@ stream"
 	*input* (sb-ext:process-output *gnuplot*))
   #+(or (and clisp linux)
 	(and clisp cygwin))
-  (multiple-value-setq (*io* *input* *output*)
+#|  (multiple-value-setq (*io* *input* *output*)
     (ext:make-pipe-io-stream *executable*
-			     :buffered t))
-  ;; ext:run-program returns an error that the executable could not be
-  ;; found:
-  ;; /bin/sh: line 0: exec: /c/Program\ Files/wgnuplot/binary/gnuplot.exe: 
-  ;; cannot execute: No such file or directory
-  #|(multiple-value-setq (*io* *input* *output*)
-  (ext:run-program *executable*
-  :input :stream
-  :output :stream
-  :wait nil))|#
+			     :buffered t))|#
+#|  (let ((info
+	 (external-program:start *executable* nil
+				 :input :stream
+				 :output :stream)))
+    (setf *output* (external-program:process-output-stream info)
+	  *input* (external-program:process-input-stream info)))|#
+  (multiple-value-setq (*io* *input* *output*)
+    (ext:run-program *executable*
+		     :input :stream
+		     :output :stream
+		     :wait nil))
   (setf *command*
 	(make-broadcast-stream *output* *command-copy*))
-  (values *command* *gnuplot*))
+  (values))
+
 
 (defun stop-gnuplot ()
   "Stop gnuplot and close all the streams"

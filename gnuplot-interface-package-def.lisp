@@ -3,6 +3,7 @@
 (defpackage #:gnuplot-interface
   (:nicknames #:gpi)
   (:use #:cl)
+  (:use #:external-program)
   (:import-from :alexandria
 		:symbolicate)
   (:export
