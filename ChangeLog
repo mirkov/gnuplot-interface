@@ -1,3 +1,8 @@
+2012-02-26  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp (start-gnuplot): Now returns nothing
+	(values)
+
 2012-02-25  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* gnuplot-interface.lisp (*executable*): Added wgnuplot path

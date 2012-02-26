@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-02-26 00:06:33 gnuplot-interface.lisp>
+;; Time-stamp: <2012-02-26 10:15:17 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -89,7 +89,8 @@ stream"
   :wait nil))|#
   (setf *command*
 	(make-broadcast-stream *output* *command-copy*))
-  (values *command* *gnuplot*))
+  (values))
+
 
 (defun stop-gnuplot ()
   "Stop gnuplot and close all the streams"

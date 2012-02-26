@@ -1,12 +1,13 @@
 #+TITLE: =gnuplot=-interface package
 
+* Package features
 Low level interface to =gnuplot= that provides:
 - start of =gnuplot= process
 - passing raw =gnuplot= commands
-- examining of sent commands 
+- echo printing of sent commands 
 
-
-Typical usage:
+* Example of use
+  Typical usage:
 #+BEGIN_SRC lisp
 (start-gnuplot) ;; starts the process
 (init-gnuplot) ;; optional, to initializes terminal
@@ -15,16 +16,25 @@ Typical usage:
 (echo-command) ;; sell last sent command
 #+END_SRC
 
-For passing complex =gnuplot= commands that consists of many lines, use
-the =send-line= and =send-line-break= commands
+  For passing complex =gnuplot= commands that consists of many lines,
+  use the =send-line= and =send-line-break= commands
+#+BEGIN_SRC lisp
+(do-stuff (action actions)
+   (send-line (action->string action)))
+(sent-line-break)
+#+END_SRC
 
-The interface has been developed and tested on =sbcl= on Linux and
-=clisp= on Cygwin.  On Cygwin it works with Cygwin's =gnuplot= and
-also the Windows executable =wgnuplot=.
-
-For use of Cygwin and =wgnuplot=, one needs to provide the feature
-=:wgnuplot=.  Furthermore, one needs to set =:wgnuplot='s property
-list as
+* Platforms
+  The interface was developed and tested on the following platforms
+  - Linux & =SBCL=
+  - Windows & Cygwin & CLISP
+    - =gnuplot=
+    - =wgnuplot=
+  
+* Cygwin and =wgnuplot=
+  For use of Cygwin and =wgnuplot=, one needs to provide the feature
+  =:wgnuplot=.  Furthermore, one needs to specify the path to the
+  executable.  This is done via =:wgnuplot='s property list:
 #+BEGIN_SRC lisp
 (setf (symbol-plist :wgnuplot)
    (list :executable "posix compliant path to executable"))
@@ -33,11 +43,14 @@ For example, the path can be:
 #+BEGIN_QUOTE
 "/c/Program\\ Files/wgnuplot/binary/gnuplot.exe"
 #+END_QUOTE
-  
-Caveats:
+The double quote of the space in the file-name is necessary. 
+
+* Caveats
 - stream plumbing is not thoroughly tested
 - windows management is not implemented
 
-Todo:
-- Use trivial-shell for communication to the process
-- multiple windows management
+* To do
+  - multiple windows management
+  - Figure out how to use clisp's =ext:run-program= instead of
+    =ext:make-pipe-io-stream=
+    - That would allow me to use the =external-program= package
