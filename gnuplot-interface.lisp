@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-02-25 19:35:16 gnuplot-interface.lisp>
+;; Time-stamp: <2012-02-26 00:06:33 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -23,8 +23,8 @@
 gnuplot")
 
 ;; streams returned by the external processes
-(defvar *input* nil "gnuplot stream")
-(defvar *output* nil "gnuplot stream")
+(defvar *input* nil "input from the gnuplot stream to lisp")
+(defvar *output* nil "lisp output to the gnuplot stream")
 (defvar *io* nil "gnuplot bidirectional stream")
 (defvar *error* nil "gnuplot error stream") ;; not used
 (defvar *command-copy* (make-string-output-stream)
@@ -71,32 +71,54 @@ stream"
 				      :input :stream
 				      :output t
 				      :error :output)
-	*input* (sb-ext:process-input *gnuplot*)
-	*command* (make-broadcast-stream *input* *command-copy*))
+	*output* (sb-ext:process-input *gnuplot*)
+	*input* (sb-ext:process-output *gnuplot*))
   #+(or (and clisp linux)
 	(and clisp cygwin))
-  (setf *gnuplot*
-	  (multiple-value-setq (*io* *input* *output*)
-	    (ext:make-pipe-io-stream *executable*
-				     :buffered t))
-	  *command*
-	  (make-broadcast-stream *output* *command-copy*))
-  (values *gnuplot* *command*))
+  (multiple-value-setq (*io* *input* *output*)
+    (ext:make-pipe-io-stream *executable*
+			     :buffered t))
+  ;; ext:run-program returns an error that the executable could not be
+  ;; found:
+  ;; /bin/sh: line 0: exec: /c/Program\ Files/wgnuplot/binary/gnuplot.exe: 
+  ;; cannot execute: No such file or directory
+  #|(multiple-value-setq (*io* *input* *output*)
+  (ext:run-program *executable*
+  :input :stream
+  :output :stream
+  :wait nil))|#
+  (setf *command*
+	(make-broadcast-stream *output* *command-copy*))
+  (values *command* *gnuplot*))
+
+(defun stop-gnuplot ()
+  "Stop gnuplot and close all the streams"
+  (command "quit")
+  #+sbcl
+  (progn
+    (close *input*)
+    (close *output*)
+    (close *command-copy*)
+    (close *command*))
+  #+clisp
+  (progn
+    (close *input*)
+    (close *output*)
+    (close *io*)
+    (close *command*)
+    (close *command-copy*)))
 
 (defun command (&rest command-and-args)
   "Pass `command-and-args' to the *command* stream"
-;;  (let ((dump
-;; clear output-stream
-  (get-output-stream-string *command-copy*)
-;;    (declare (ignore dump)))
+#|  (get-output-stream-string *command-copy*)|#
   (when command-and-args
-      (apply #'format  *command* command-and-args))
-  (format *command* "~%")
-  (finish-output *command*))
+    (apply #'format  *command* command-and-args)
+    (format *command* "~%")
+    (finish-output *command*)))
 
-(defun gnuplot-command (args)
+(defun gnuplot-command (&rest args)
   "Alias for COMMAND"
-  (funcall #'command args))
+  (apply #'command args))
 
 (defun send-line (string)
   "Pass a single line to the gnuplot stream

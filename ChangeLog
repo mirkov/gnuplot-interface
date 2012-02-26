@@ -4,6 +4,9 @@
 	(*terminal*): Changed feature tests to be based on platforms, not
 	my individual machines
 	(eval-when (...)): cleaned-up DISPLAY initialization 
+	(command): cleaned-up accumulated crud
+	(gnuplot-command): args is now a &rest, and we use apply instead
+	of funcall
 
 2011-10-05  Mirko Vukovic  <Mirko Vukovic <mirko.vukovic@us.tel.com>>
 
