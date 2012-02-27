@@ -2,6 +2,8 @@
 
 	* gnuplot-interface.lisp (start-gnuplot): Set return value to
 	(values)
+	(start-gnuplot): Implemented call to gnuplot via
+	external-program:run.  Tested on clisp only
 
 2012-02-25  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
