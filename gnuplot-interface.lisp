@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-02-26 23:29:10 gnuplot-interface.lisp>
+;; Time-stamp: <2012-02-27 08:28:11 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -97,6 +97,10 @@ stream"
     ;;(close *io*)
     (close *command*)
     (close *command-copy*)))
+
+(defun stop ()
+  "Alias for STOP-GNUPLOT"
+  (stop-gnuplot))
 
 (defun command (&rest command-and-args)
   "Pass `command-and-args' to the *command* stream"

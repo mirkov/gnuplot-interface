@@ -13,12 +13,12 @@
    ;;
    ;; In the lines below, if a line has two symbols, the second symbol
    ;; is alternate command name
-   :start-gnuplot
+   :start :start-gnuplot
    :init-gnuplot
    :hello-world :gnuplot-hello-world
    :test :gnuplot-test
    :reset :gnuplot-reset 
-   :stop-gnuplot
+   :stop :stop-gnuplot
    :command :gnuplot-command
    :echo-command :gnuplot-echo-command
 	   
