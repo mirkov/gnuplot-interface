@@ -1,3 +1,15 @@
+2012-05-31  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp: Porting code to desktop.  Because of
+	outdated github the code may be slightly unstable.  Needs to be
+	retested on sbcl and laptop.
+	(start-gnuplot): While porting to new desktop (where it now
+	works), I might have mungled the interface.  This functions needs
+	to be retested on SBCL and on my laptop.
+	(init-gnuplot): Fixed bug - I was using symbolicate, which I don't
+	think was necessary.  Now I downcase the terminal name, since that
+	seems to be the convention on gnuplot.
+
 2012-02-26  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* gnuplot-interface.lisp (start-gnuplot): Now returns nothing

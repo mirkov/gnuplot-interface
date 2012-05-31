@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-02-26 10:15:17 gnuplot-interface.lisp>
+;; Time-stamp: <2012-05-31 09:52:23 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -65,6 +65,8 @@ the *command* broadcast stream
 Return multiple values the *gnuplot* executable and the *command*
 stream"
   (setf *command-copy* (make-string-output-stream))
+  ;; This SBCL chunk of code may not be necessary, and
+  ;; external-program:run might work.  I need to retest on sbcl
   #+sbcl
   (setf *gnuplot* (sb-ext:run-program *executable*  nil
 				      :wait nil
@@ -75,9 +77,18 @@ stream"
 	*input* (sb-ext:process-output *gnuplot*))
   #+(or (and clisp linux)
 	(and clisp cygwin))
-  (multiple-value-setq (*io* *input* *output*)
-    (ext:make-pipe-io-stream *executable*
-			     :buffered t))
+  ;; we use external-program:run instead of external-program:start.
+  ;; Historical note: In prior versions, on clisp I used
+  ;; ext:run-program.  I had to set :wait to nil in order for the
+  ;; command to work.
+  (multiple-value-bind
+	(status result)
+      (external-program:run *executable* nil
+			    :input :stream
+			    :output :stream)
+    (declare (ignore status))
+    (setf *output* (two-way-stream-output-stream result)
+	  *input* (two-way-stream-input-stream result)))
   ;; ext:run-program returns an error that the executable could not be
   ;; found:
   ;; /bin/sh: line 0: exec: /c/Program\ Files/wgnuplot/binary/gnuplot.exe: 
@@ -105,9 +116,13 @@ stream"
   (progn
     (close *input*)
     (close *output*)
-    (close *io*)
+    ;;(close *io*)
     (close *command*)
     (close *command-copy*)))
+
+(defun stop ()
+  "Alias for STOP-GNUPLOT"
+  (stop-gnuplot))
 
 (defun command (&rest command-and-args)
   "Pass `command-and-args' to the *command* stream"
@@ -148,7 +163,7 @@ finished by the SEND-LINE-BREAK command."
   (echo-command))
 
 (defun init-gnuplot ()
-  (command "set terminal ~a" (alexandria:symbolicate *terminal*)))
+  (command "set terminal ~a" (string-downcase *terminal*) #|(alexandria:symbolicate *terminal*)|#))
 
 (defun hello-world ()
   "Throw test plot"
