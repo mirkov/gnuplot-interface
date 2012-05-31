@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-05-31 10:16:19EDT gnuplot-interface.lisp>
+;; Time-stamp: <2012-05-31 10:26:52EDT gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -38,7 +38,7 @@ gnuplot")
 
 
 (defparameter *executable*
-  #+sbcl
+  #+unix
   (or (probe-file "/usr/local/bin/gnuplot")
       "/usr/bin/gnuplot")
   #+(and clisp (not wgnuplot)) "gnuplot"

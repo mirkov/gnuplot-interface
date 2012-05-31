@@ -14,6 +14,8 @@
 	(*terminal*): Added case for unix feature setting to X11.
 	(start-gnuplot): I restored the sbcl specific code since
 	exteranl-program:run did not work
+	(*executable*): Changed sbcl feature filter to unix feature
+	filter.  That should make it more robust
 
 2012-02-26  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
