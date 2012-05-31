@@ -9,6 +9,11 @@
 	(init-gnuplot): Fixed bug - I was using symbolicate, which I don't
 	think was necessary.  Now I downcase the terminal name, since that
 	seems to be the convention on gnuplot.
+	(*executable*): Modified sbcl search path to test both
+	/usr/local/bin and /usr/bin
+	(*terminal*): Added case for unix feature setting to X11.
+	(start-gnuplot): I restored the sbcl specific code since
+	exteranl-program:run did not work
 
 2012-02-26  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
