@@ -23,7 +23,9 @@
    :echo-command :gnuplot-echo-command
 	   
    :send-line :send-line-to-gnuplot
-   :send-line-break :send-line-break-to-gnuplot)
+   :send-line-break :send-line-break-to-gnuplot
+
+   :*terminal*)
   (:documentation
 "Package for starting a gnuplot subprocess and sending gnuplot
 commands to it.  This package does not introduce plotting commands of

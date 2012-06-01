@@ -1,3 +1,8 @@
+2012-02-28  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface-package-def.lisp (#:gnuplot-interface):
+	Exporting the *terminal* symbol
+
 2012-02-27  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* gnuplot-interface.lisp (stop): Added as alias to stop-gnuplot
