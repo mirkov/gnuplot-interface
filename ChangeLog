@@ -1,7 +1,21 @@
+2012-02-28  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface-package-def.lisp (#:gnuplot-interface):
+	Exporting the *terminal* symbol
+
+2012-02-27  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp (stop): Added as alias to stop-gnuplot
+
+	* gnuplot-interface-package-def.lisp (#:gnuplot-interface): Added
+	:start and :stop as exported symbols
+
 2012-02-26  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
-	* gnuplot-interface.lisp (start-gnuplot): Now returns nothing
+	* gnuplot-interface.lisp (start-gnuplot): Set return value to
 	(values)
+	(start-gnuplot): Implemented call to gnuplot via
+	external-program:run.  Tested on clisp only
 
 2012-02-25  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 

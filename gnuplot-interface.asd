@@ -5,6 +5,7 @@
   :components ((:file "gnuplot-interface-package-def")
                (:file "gnuplot-interface")
 	       (:file "gnuplot-windows")
-(:file "examples"))
-  :depends-on (:alexandria))
+	       (:file "examples"))
+  :depends-on (:alexandria
+	       :external-program))
 

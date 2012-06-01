@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-02-26 10:15:17 gnuplot-interface.lisp>
+;; Time-stamp: <2012-02-27 08:28:11 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -65,28 +65,17 @@ the *command* broadcast stream
 Return multiple values the *gnuplot* executable and the *command*
 stream"
   (setf *command-copy* (make-string-output-stream))
-  #+sbcl
-  (setf *gnuplot* (sb-ext:run-program *executable*  nil
-				      :wait nil
-				      :input :stream
-				      :output t
-				      :error :output)
-	*output* (sb-ext:process-input *gnuplot*)
-	*input* (sb-ext:process-output *gnuplot*))
-  #+(or (and clisp linux)
-	(and clisp cygwin))
-  (multiple-value-setq (*io* *input* *output*)
-    (ext:make-pipe-io-stream *executable*
-			     :buffered t))
-  ;; ext:run-program returns an error that the executable could not be
-  ;; found:
-  ;; /bin/sh: line 0: exec: /c/Program\ Files/wgnuplot/binary/gnuplot.exe: 
-  ;; cannot execute: No such file or directory
-  #|(multiple-value-setq (*io* *input* *output*)
-  (ext:run-program *executable*
-  :input :stream
-  :output :stream
-  :wait nil))|#
+  ;; we use external-program:run instead of external-program:start.
+  ;; on clisp, we have to set :wait to nil in order for
+  ;; ext:run-program to work.
+  (multiple-value-bind
+	(status result)
+      (external-program:run *executable* nil
+			    :input :stream
+			    :output :stream)
+    (declare (ignore status))
+    (setf *output* (two-way-stream-output-stream result)
+	  *input* (two-way-stream-input-stream result)))
   (setf *command*
 	(make-broadcast-stream *output* *command-copy*))
   (values))
@@ -105,9 +94,13 @@ stream"
   (progn
     (close *input*)
     (close *output*)
-    (close *io*)
+    ;;(close *io*)
     (close *command*)
     (close *command-copy*)))
+
+(defun stop ()
+  "Alias for STOP-GNUPLOT"
+  (stop-gnuplot))
 
 (defun command (&rest command-and-args)
   "Pass `command-and-args' to the *command* stream"
