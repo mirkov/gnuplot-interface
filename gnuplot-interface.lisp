@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-02-27 08:28:11 gnuplot-interface.lisp>
+;; Time-stamp: <2012-05-31 10:26:52EDT gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -37,16 +37,20 @@ gnuplot")
 ;; my streams
 
 
-(defparameter *executable* #+sbcl "/usr/local/bin/gnuplot"
-	#+(and clisp (not wgnuplot)) "gnuplot"
-	#+(and clisp wgnuplot)
-	(getf (symbol-plist :wgnuplot) :executable)
+(defparameter *executable*
+  #+unix
+  (or (probe-file "/usr/local/bin/gnuplot")
+      "/usr/bin/gnuplot")
+  #+(and clisp (not wgnuplot)) "gnuplot"
+  #+(and clisp wgnuplot)
+  (getf (symbol-plist :wgnuplot) :executable)
   "Path to the executable")
 
 (defparameter *terminal*
   #+(and cygwin (not wgnuplot)) 'x11
   #+(and x11 (not cygwin)) 'wxt
   #+(and clisp wgnuplot) 'wxt
+  #+unix 'x11
   "Default gnuplot terminal")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
@@ -66,8 +70,20 @@ Return multiple values the *gnuplot* executable and the *command*
 stream"
   (setf *command-copy* (make-string-output-stream))
   ;; we use external-program:run instead of external-program:start.
-  ;; on clisp, we have to set :wait to nil in order for
-  ;; ext:run-program to work.
+  ;;
+  ;; This SBCL chunk of code is necessary because external-program:run
+  ;; does not work.  I may revist this at a later date
+  #+sbcl
+  (setf *gnuplot* (sb-ext:run-program *executable*  nil
+  				      :wait nil
+  				      :input :stream
+  				      :output t
+  				      :error :output)
+  	*output* (sb-ext:process-input *gnuplot*)
+  	*input* (sb-ext:process-output *gnuplot*))
+  #+(or (and clisp linux)
+  	(and clisp cygwin))
+  ;; we use external-program:run instead of external-program:start.
   (multiple-value-bind
 	(status result)
       (external-program:run *executable* nil
@@ -76,6 +92,16 @@ stream"
     (declare (ignore status))
     (setf *output* (two-way-stream-output-stream result)
 	  *input* (two-way-stream-input-stream result)))
+  ;; Historical note: In prior versions, on clisp I used
+  ;; ext:run-program.  I had to set :wait to nil in order for the
+  ;; command to work.  I moved to the external-program package, hoping
+  ;; to be more universal.  But as of 2012-05-31, its code did not
+  ;; work with SBCL.  It would just hang
+  #|(multiple-value-setq (*io* *input* *output*)
+  (ext:run-program *executable*
+  :input :stream
+  :output :stream
+  :wait nil))|#
   (setf *command*
 	(make-broadcast-stream *output* *command-copy*))
   (values))
@@ -141,7 +167,7 @@ finished by the SEND-LINE-BREAK command."
   (echo-command))
 
 (defun init-gnuplot ()
-  (command "set terminal ~a" (alexandria:symbolicate *terminal*)))
+  (command "set terminal ~a" (string-downcase *terminal*) #|(alexandria:symbolicate *terminal*)|#))
 
 (defun hello-world ()
   "Throw test plot"
