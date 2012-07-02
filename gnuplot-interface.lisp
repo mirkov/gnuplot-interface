@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-05-31 10:26:52EDT gnuplot-interface.lisp>
+;; Time-stamp: <2012-06-21 16:48:56 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -38,7 +38,8 @@ gnuplot")
 
 
 (defparameter *executable*
-  #+unix
+  #+(and unix
+	 (not (and clisp wgnuplot)))
   (or (probe-file "/usr/local/bin/gnuplot")
       "/usr/bin/gnuplot")
   #+(and clisp (not wgnuplot)) "gnuplot"
@@ -50,7 +51,8 @@ gnuplot")
   #+(and cygwin (not wgnuplot)) 'x11
   #+(and x11 (not cygwin)) 'wxt
   #+(and clisp wgnuplot) 'wxt
-  #+unix 'x11
+  #+(and unix
+	 (not (and clisp wgnuplot))) 'x11
   "Default gnuplot terminal")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)

@@ -1,3 +1,9 @@
+2012-06-21  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp (*executable*, *terminal*): The tests
+	were not well defined on clisp+cygwin.  I had to redefine unix to
+	exclude clisp & wgnuplot.  This needs more attention.
+
 2012-05-31  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* gnuplot-interface.lisp: Porting code to desktop.  Because of
