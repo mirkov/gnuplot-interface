@@ -69,6 +69,8 @@ the *command* broadcast stream
 Return multiple values the *gnuplot* executable and the *command*
 stream"
   (setf *command-copy* (make-string-output-stream))
+  ;; we use external-program:run instead of external-program:start.
+  ;;
   ;; This SBCL chunk of code is necessary because external-program:run
   ;; does not work.  I may revist this at a later date
   #+sbcl
