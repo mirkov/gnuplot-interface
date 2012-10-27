@@ -1,3 +1,13 @@
+2012-10-27  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp: Renamed variables *input* and *output*
+	into more descriptive *gnuplot-input* and *gnuplot-output*
+	(start-gnuplot): I now use external-program:run to start gnuplot
+	-- I had to modify that routine because it was signaling an error,
+	and I notified the maintainer.  I kept the old code for clisp for
+	just in case.
+	Changed all defvar to defparameter for easier maintenance.
+
 2012-06-21  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* gnuplot-interface.lisp (*executable*, *terminal*): The tests

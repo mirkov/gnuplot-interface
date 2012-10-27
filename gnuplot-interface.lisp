@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-06-21 16:48:56 gnuplot-interface.lisp>
+;; Time-stamp: <2012-10-27 19:03:35Eastern Daylight Time gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -19,21 +19,21 @@
 
 (in-package #:gnuplot-interface)
 
-(defvar *gnuplot* "Value returned by the command that invokes
+(defparameter *gnuplot* "Value returned by the command that invokes
 gnuplot")
 
 ;; streams returned by the external processes
-(defvar *input* nil "input from the gnuplot stream to lisp")
-(defvar *output* nil "lisp output to the gnuplot stream")
-(defvar *io* nil "gnuplot bidirectional stream")
-(defvar *error* nil "gnuplot error stream") ;; not used
-(defvar *command-copy* (make-string-output-stream)
+(defparameter *gnuplot-output* nil "input from the gnuplot stream to lisp")
+(defparameter *gnuplot-input* nil "lisp output to the gnuplot stream")
+(defparameter *io* nil "gnuplot bidirectional stream")
+(defparameter *error* nil "gnuplot error stream") ;; not used
+(defparameter *command-copy* (make-string-output-stream)
   "Receives a copy of gnuplot commands")
-(defvar *command* nil "Stream used to send commands")
+(defparameter *command* nil "Stream used to send commands")
 
 ;;; Variables for multiple windows.  Currently not used
-(defvar *windows* nil "a-list of gnuplot streams and names")
-(defvar *windows-history* nil "list of most recently used windows")
+(defparameter *windows* nil "a-list of gnuplot streams and names")
+(defparameter *windows-history* nil "list of most recently used windows")
 ;; my streams
 
 
@@ -81,31 +81,30 @@ stream"
   				      :input :stream
   				      :output t
   				      :error :output)
-  	*output* (sb-ext:process-input *gnuplot*)
-  	*input* (sb-ext:process-output *gnuplot*))
+  	*gnuplot-input* (sb-ext:process-input *gnuplot*)
+  	*gnuplot-output* (sb-ext:process-output *gnuplot*))
   #+(or (and clisp linux)
   	(and clisp cygwin))
-  ;; we use external-program:run instead of external-program:start.
-  (multiple-value-bind
-	(status result)
-      (external-program:run *executable* nil
+  (multiple-value-bind (result io-stream)
+      (external-program:run *executable* nil ;;'("-p" "-e" "plot sin(x)")
 			    :input :stream
 			    :output :stream)
-    (declare (ignore status))
-    (setf *output* (two-way-stream-output-stream result)
-	  *input* (two-way-stream-input-stream result)))
+    (declare (ignore result))
+    (setf *gnuplot-input* (two-way-stream-output-stream io-stream)
+	  *gnuplot-output* (two-way-stream-input-stream io-stream)))
   ;; Historical note: In prior versions, on clisp I used
   ;; ext:run-program.  I had to set :wait to nil in order for the
   ;; command to work.  I moved to the external-program package, hoping
   ;; to be more universal.  But as of 2012-05-31, its code did not
   ;; work with SBCL.  It would just hang
-  #|(multiple-value-setq (*io* *input* *output*)
-  (ext:run-program *executable*
-  :input :stream
-  :output :stream
-  :wait nil))|#
+  #+raw-clisp
+  (multiple-value-setq (*io* *gnuplot-output* *gnuplot-input*)
+    (ext:run-program *executable*
+		     :input :stream
+		     :output :stream
+		     :wait t))
   (setf *command*
-	(make-broadcast-stream *output* *command-copy*))
+	(make-broadcast-stream *gnuplot-input* *command-copy*))
   (values))
 
 
@@ -114,14 +113,14 @@ stream"
   (command "quit")
   #+sbcl
   (progn
-    (close *input*)
-    (close *output*)
+    (close *gnuplot-output*)
+    (close *gnuplot-input*)
     (close *command-copy*)
     (close *command*))
   #+clisp
   (progn
-    (close *input*)
-    (close *output*)
+    (close *gnuplot-output*)
+    (close *gnuplot-input*)
     ;;(close *io*)
     (close *command*)
     (close *command-copy*)))
@@ -183,8 +182,8 @@ finished by the SEND-LINE-BREAK command."
 (defun clean-process-info ()
   "Set all special vars to nil"
   (setf *gnuplot* nil
-	*input* nil
-	*output* nil
+	*gnuplot-output* nil
+	*gnuplot-input* nil
 	*io* nil
 	*windows* nil
 	*windows-history* nil
