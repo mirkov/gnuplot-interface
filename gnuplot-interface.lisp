@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-10-27 19:03:35Eastern Daylight Time gnuplot-interface.lisp>
+;; Time-stamp: <2012-11-06 16:58:05EST gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -75,7 +75,8 @@ stream"
   ;;
   ;; This SBCL chunk of code is necessary because external-program:run
   ;; does not work.  I may revist this at a later date
-  #+sbcl
+  #+(and native-external-program
+	 sbcl)
   (setf *gnuplot* (sb-ext:run-program *executable*  nil
   				      :wait nil
   				      :input :stream
@@ -83,8 +84,17 @@ stream"
   				      :error :output)
   	*gnuplot-input* (sb-ext:process-input *gnuplot*)
   	*gnuplot-output* (sb-ext:process-output *gnuplot*))
-  #+(or (and clisp linux)
-  	(and clisp cygwin))
+  #+(and sbcl
+	 external-program)
+  (multiple-value-bind (io-stream)
+      (external-program:start *executable* nil ;;'("-p" "-e" "plot sin(x)")
+			    :input :stream
+			    :output :stream)
+    (declare (ignore result))
+    (setf *gnuplot-input* (two-way-stream-output-stream io-stream)
+	  *gnuplot-output* (two-way-stream-input-stream io-stream)))
+  #+(and external-program
+	 (and clisp cygwin))
   (multiple-value-bind (result io-stream)
       (external-program:run *executable* nil ;;'("-p" "-e" "plot sin(x)")
 			    :input :stream
@@ -97,7 +107,8 @@ stream"
   ;; command to work.  I moved to the external-program package, hoping
   ;; to be more universal.  But as of 2012-05-31, its code did not
   ;; work with SBCL.  It would just hang
-  #+raw-clisp
+  #+(and native-external-program
+	 (and clisp cygwin)
   (multiple-value-setq (*io* *gnuplot-output* *gnuplot-input*)
     (ext:run-program *executable*
 		     :input :stream
@@ -105,7 +116,7 @@ stream"
 		     :wait t))
   (setf *command*
 	(make-broadcast-stream *gnuplot-input* *command-copy*))
-  (values))
+  (values)))
 
 
 (defun stop-gnuplot ()
