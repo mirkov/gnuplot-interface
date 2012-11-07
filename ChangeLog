@@ -1,7 +1,14 @@
+2012-11-07  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp (start-gnuplot): Changed :ouput from t to
+	:stream for SBCL native command.
+	(start-gnuplot): Fixed a closing parethesis error on
+	clisp & cygwin & native-external-program feature selector
+
 2012-11-06  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
-	* gnuplot-interface.lisp (start-gnuplot): Added
-	``native-external-program'' to enable testing of external program
+	* gnuplot-interface.lisp (start-gnuplot): Added feature
+	`native-external-program' to enable testing of external program
 	invocation
 
 2012-10-27  Mirko Vukovic  <mirko.vukovic@us.tel.com>

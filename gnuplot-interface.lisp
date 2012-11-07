@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-11-06 16:58:05EST gnuplot-interface.lisp>
+;; Time-stamp: <2012-11-07 13:25:27EST gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -77,10 +77,10 @@ stream"
   ;; does not work.  I may revist this at a later date
   #+(and native-external-program
 	 sbcl)
-  (setf *gnuplot* (sb-ext:run-program *executable*  nil
+  (setf *gnuplot* (sb-ext:run-program *executable* nil;;'("-p" "-e" "plot sin(x)")
   				      :wait nil
   				      :input :stream
-  				      :output t
+  				      :output :stream
   				      :error :output)
   	*gnuplot-input* (sb-ext:process-input *gnuplot*)
   	*gnuplot-output* (sb-ext:process-output *gnuplot*))
@@ -108,7 +108,7 @@ stream"
   ;; to be more universal.  But as of 2012-05-31, its code did not
   ;; work with SBCL.  It would just hang
   #+(and native-external-program
-	 (and clisp cygwin)
+	 (and clisp cygwin))
   (multiple-value-setq (*io* *gnuplot-output* *gnuplot-input*)
     (ext:run-program *executable*
 		     :input :stream
@@ -116,7 +116,7 @@ stream"
 		     :wait t))
   (setf *command*
 	(make-broadcast-stream *gnuplot-input* *command-copy*))
-  (values)))
+  (values))
 
 
 (defun stop-gnuplot ()
@@ -124,7 +124,7 @@ stream"
   (command "quit")
   #+sbcl
   (progn
-    (close *gnuplot-output*)
+    ;;(close *gnuplot-output*)
     (close *gnuplot-input*)
     (close *command-copy*)
     (close *command*))
