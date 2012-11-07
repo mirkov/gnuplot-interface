@@ -40,3 +40,7 @@ gpi:test
 gpi:...
 
 "))
+
+
+(unless (find :native-external-program *features*)
+  (push :native-external-program *features*))

@@ -1,0 +1,94 @@
+#+title: Documentation for ~gnuplot-interface~ developers
+
+* On interfacing with external ~gnuplot~ processes
+
+  I built the interface on the following architectures
+
+  | OS             | Lisp  | Gnuplot |
+  |----------------+-------+---------|
+  | Linux          | SBCL  | Native  |
+  | Cygwin+Windows | CLisp | Windows |
+
+
+  As of [2012-11-07 Wed] I use CLisp's and SBCL's native interfaces
+  the gnuplot executable.  CLisp runs on Cygwin + Windows, but I call
+  the Windows version of ~gnuplot~, as I cannot get X11 running.
+
+  I tried using the ~external-program~ package for a unified
+  interface, but failed, as I my requirements conflicted with the
+  packages' interface.  Details follow.
+
+  What I discuss below could be due to the fact that I use the Windows
+  version of gnuplot, wgnuplot.  On Windows I link to ~c:/Program
+  Files/wgnuplot/bin/gnuplot.exe~.
+
+  The testing was done through SLIME.
+
+** The modes of interacting with ~gnuplot~
+   
+   My operating mode is to start a process, and then send it a
+   succession of commands.  Thus, I can set gnuplot's state to persist
+   from command to command.
+
+   Another alternative is to start a process for each individual plot,
+   sending it a command at invocation while specifying the window to
+   persist.
+
+
+   On both SBCL and Clisp, I launch the external program, setting
+   ~:wait~ to ~NIL~.  Otherwise, I get a broken pipe error.  On SBCL, I
+   use ~sb-ext:run-program *executable* ... :wait nil~.  On Clisp, I
+   use ~ext:run-program *executable* ... :wait nil~.
+
+
+** Effects of setting ~:wait~ to ~T~   
+
+   The following table summarizes the effects of setting ~:wait~ to ~T~
+   or ~NIL~:
+   |       | ~:wait~ | Hangs? | CPU usage | Accepts Input?    |
+   |-------+---------+--------+-----------+-------------------|
+   | SBCL  | ~nil~   | No     |         0 | Yes               |
+   |       | ~t~     | Yes    |         0 | Broken Pipe Error |
+   |-------+---------+--------+-----------+-------------------|
+   | CLISP | ~nil~   | No     |      100% | Broken Pipe Error |
+   |       | ~t~     | No     |        0% | Yes               |
+
+
+   I also tried launching gnuplot by specifying a plot command: ~-p -e
+   plot sin(x)~ as ~\'("-p" "-e" "plot sin(x)")~.  This did not help:
+   |       | ~:wait~ | Hangs? | CPU usage | Creates Plot? | Accepts Input?    |
+   |-------+---------+--------+-----------+---------------+-------------------|
+   | SBCL  | ~nil~   | No     |         0 | No            | Broken Pipe Error |
+   |       | ~t~     | Yes    |         0 | No            | Broken Pipe Error |
+   |-------+---------+--------+-----------+---------------+-------------------|
+   | CLISP | ~nil~   | No     |      100% | Yes           | Broken Pipe Error |
+   |       | ~t~     | No     |        0% | Yes           | Yes               |
+
+
+** Effects of the DISPLAY variable in SBCL/lINUX
+   I considered whether the problem on sbcl is that DISPLAY is not
+   correctly set.  I tried setting the DISPLAY value to ":0.0" by
+   using the following code snippet to set the ~environment~ keyword:
+   #+BEGIN_SRC lisp
+     (let ((env
+            (remove-if (lambda (name=value)
+                         (not (zerop (mismatch name=value "DISPLAY=" :test #'char=)))) 
+                       (sb-ext:posix-environ))))
+       (push "DISPLAY=0.0" env)
+       env)
+   #+END_SRC
+   That did not help.
+
+
+
+
+** Regarding the usage of ~external-program~
+   Because of the conflicting behavior of gnuplot with respect to the
+   ~:wait~ value, I have to use system-specific interfaces.
+
+
+   
+* How other libraries do it
+  - Garry Kings [[http://www.cliki.net/CLNUPlot][CLNUPlot]] generates a file with gnuplot commands and
+    launches gnuplot from a shell command
+  - [[http://clocc.sourceforge.net/dist/cllib.html][CLLIB]] interfaces to gnuplot, but I was not able to decipher how.

@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-11-06 16:58:05EST gnuplot-interface.lisp>
+;; Time-stamp: <2012-11-07 13:53:58 gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -18,6 +18,8 @@
 ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 (in-package #:gnuplot-interface)
+
+
 
 (defparameter *gnuplot* "Value returned by the command that invokes
 gnuplot")
@@ -88,35 +90,41 @@ stream"
 	 external-program)
   (multiple-value-bind (io-stream)
       (external-program:start *executable* nil ;;'("-p" "-e" "plot sin(x)")
-			    :input :stream
-			    :output :stream)
+			      :input :stream
+			      :output :stream)
     (declare (ignore result))
     (setf *gnuplot-input* (two-way-stream-output-stream io-stream)
 	  *gnuplot-output* (two-way-stream-input-stream io-stream)))
   #+(and external-program
 	 (and clisp cygwin))
-  (multiple-value-bind (result io-stream)
-      (external-program:run *executable* nil ;;'("-p" "-e" "plot sin(x)")
-			    :input :stream
-			    :output :stream)
-    (declare (ignore result))
-    (setf *gnuplot-input* (two-way-stream-output-stream io-stream)
-	  *gnuplot-output* (two-way-stream-input-stream io-stream)))
+  (setf *gnuplot* (external-program:start *executable* nil ;;'("-p" "-e" "plot sin(x)")
+					  :input :stream
+					  :output :stream)
+	*gnuplot-input* (external-program:process-input-stream *gnuplot*)
+  	*gnuplot-output* (external-program:process-output-stream *gnuplot*))
+  #+skip(multiple-value-bind (result io-stream)
+	    (external-program:run *executable* nil ;;'("-p" "-e" "plot sin(x)")
+				  :input :stream
+				  :output :stream)
+	  (declare (ignore result))
+	  (setf *gnuplot-input* (two-way-stream-output-stream io-stream)
+		*gnuplot-output* (two-way-stream-input-stream io-stream)))
   ;; Historical note: In prior versions, on clisp I used
   ;; ext:run-program.  I had to set :wait to nil in order for the
   ;; command to work.  I moved to the external-program package, hoping
   ;; to be more universal.  But as of 2012-05-31, its code did not
   ;; work with SBCL.  It would just hang
   #+(and native-external-program
-	 (and clisp cygwin)
+	 (and clisp cygwin))
   (multiple-value-setq (*io* *gnuplot-output* *gnuplot-input*)
     (ext:run-program *executable*
+		     :arguments nil ;;'("-p" "-e" "plot sin(x)")
 		     :input :stream
 		     :output :stream
 		     :wait t))
   (setf *command*
 	(make-broadcast-stream *gnuplot-input* *command-copy*))
-  (values)))
+  (values))
 
 
 (defun stop-gnuplot ()

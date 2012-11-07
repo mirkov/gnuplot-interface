@@ -28,8 +28,9 @@ Low level interface to =gnuplot= that provides:
   The interface was developed and tested on the following platforms
   - Linux & =SBCL=
   - Windows & Cygwin & CLISP
-    - =gnuplot=
     - =wgnuplot=
+    - =gnuplot= was not tested in a while as I cannot get X11 on my
+      Windows machines.
   
 * Cygwin and =wgnuplot=
   For use of Cygwin and =wgnuplot=, one needs to provide the feature
@@ -61,3 +62,4 @@ variable has to be set to the new path.
   - Figure out how to use clisp's =ext:run-program= instead of
     =ext:make-pipe-io-stream=
     - That would allow me to use the =external-program= package
+

@@ -1,3 +1,8 @@
+2012-11-07  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface-package-def.lisp: Pushing
+	:native-external-program to *features*
+
 2012-11-06  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* gnuplot-interface.lisp (start-gnuplot): Added
