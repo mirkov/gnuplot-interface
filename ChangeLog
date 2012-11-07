@@ -2,8 +2,10 @@
 
 	* gnuplot-interface.lisp (start-gnuplot): Changed :ouput from t to
 	:stream for SBCL native command.
-	(start-gnuplot): Fixed a closing parethesis error on
-	clisp & cygwin & native-external-program feature selector
+	(start-gnuplot): Fixed a closing parethesis error on clisp &
+	cygwin & native-external-program feature selector
+	(stop-gnuplot): Wrapped cleanup code inside unwind-protect.  Not
+	quite sure that it is working though
 
 2012-11-06  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 

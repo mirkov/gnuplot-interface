@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-11-07 13:25:27EST gnuplot-interface.lisp>
+;; Time-stamp: <2012-11-07 16:42:16EST gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -73,17 +73,19 @@ stream"
   (setf *command-copy* (make-string-output-stream))
   ;; we use external-program:run instead of external-program:start.
   ;;
-  ;; This SBCL chunk of code is necessary because external-program:run
-  ;; does not work.  I may revist this at a later date
+  ;; We specify 
   #+(and native-external-program
 	 sbcl)
-  (setf *gnuplot* (sb-ext:run-program *executable* nil;;'("-p" "-e" "plot sin(x)")
-  				      :wait nil
-  				      :input :stream
-  				      :output :stream
-  				      :error :output)
-  	*gnuplot-input* (sb-ext:process-input *gnuplot*)
-  	*gnuplot-output* (sb-ext:process-output *gnuplot*))
+  (setf
+   *gnuplot*
+   (sb-ext:run-program
+    *executable* nil
+    :wait nil
+    :input :stream
+    :output :stream
+    :error :output)
+   *gnuplot-input* (sb-ext:process-input *gnuplot*)
+   *gnuplot-output* (sb-ext:process-output *gnuplot*))
   #+(and sbcl
 	 external-program)
   (multiple-value-bind (io-stream)
@@ -121,20 +123,21 @@ stream"
 
 (defun stop-gnuplot ()
   "Stop gnuplot and close all the streams"
+  (unwind-protect
   (command "quit")
-  #+sbcl
-  (progn
+    #+sbcl
+    (progn
     ;;(close *gnuplot-output*)
     (close *gnuplot-input*)
     (close *command-copy*)
     (close *command*))
-  #+clisp
-  (progn
-    (close *gnuplot-output*)
-    (close *gnuplot-input*)
-    ;;(close *io*)
-    (close *command*)
-    (close *command-copy*)))
+    #+clisp
+    (progn
+      (close *gnuplot-output*)
+      (close *gnuplot-input*)
+      ;;(close *io*)
+      (close *command*)
+      (close *command-copy*))))
 
 (defun stop ()
   "Alias for STOP-GNUPLOT"
