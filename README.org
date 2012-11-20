@@ -11,7 +11,7 @@ Low level interface to =gnuplot= that provides:
 #+BEGIN_SRC lisp
 (start-gnuplot) ;; starts the process
 (init-gnuplot) ;; optional, to initializes terminal
-(hello-world) ;;  test output
+(hello-world) ;;  plot of cos(x)
 (command "command-string") ;; send command to gnuplot
 (echo-command) ;; sell last sent command
 #+END_SRC
@@ -23,6 +23,9 @@ Low level interface to =gnuplot= that provides:
    (send-line (action->string action)))
 (sent-line-break)
 #+END_SRC
+
+  A companion library ~cl--gnuplot-command-string~ provides a few
+  facilities for creating gnuplot commands.
 
 * Platforms
   The interface was developed and tested on the following platforms
