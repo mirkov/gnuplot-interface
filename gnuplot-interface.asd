@@ -7,5 +7,5 @@
 	       (:file "gnuplot-windows")
 	       (:file "examples"))
   :depends-on (:alexandria
-	       :external-program))
+	       #+skip-external-program :external-program))
 

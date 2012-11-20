@@ -1,5 +1,11 @@
 2012-11-20  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
+	* gnuplot-interface-package-def.lisp (#:gnuplot-interface):
+	Removed use of EXTERNAL-PROGRAM, as it currently does not work
+
+	* gnuplot-interface.asd (#:gnuplot-interface): Removed dependency
+	on EXTERNAL-PROGRAM, as it currently does not work
+
 	* gnuplot-interface.lisp (*native-external-program*): New variable
 	controls compilation of START-GNUPLOT
 	(start-gnuplot): Cleaned up code, documentation, and code comments.
