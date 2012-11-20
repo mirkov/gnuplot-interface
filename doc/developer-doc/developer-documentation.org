@@ -25,15 +25,22 @@
   The testing was done through SLIME.
 
 ** The modes of interacting with ~gnuplot~
+
+   There are two modes of interacting with gnuplot:
+   - launch process and pass commands to it
+   - write sequence of commands to file, and start gnuplot command to
+     process the file
+     
+     
+   The drawback of the latter approach is that in case of plotting
+   data from a file, I have to read a file, write the data to another
+   file, and for gnuplot to read that other file.  This will create a
+   noticeable delay for very large data files that I sometimes
+   encounter.  It is true that I could use ~awk~ inside the gnuplot
+   command (as shown [[http://stackoverflow.com/questions/12846717/using-awk-or-other-shell-command-inside-gnuplot-function][here]].  But ~awk~ cannot handle binary files.
    
    My operating mode is to start a process, and then send it a
-   succession of commands.  Thus, I can set gnuplot's state to persist
-   from command to command.
-
-   Another alternative is to start a process for each individual plot,
-   sending it a command at invocation while specifying the window to
-   persist.
-
+   succession of commands.  
 
    On both SBCL and Clisp, I launch the external program, setting
    ~:wait~ to ~NIL~.  Otherwise, I get a broken pipe error.  On SBCL, I
@@ -55,7 +62,8 @@
 
 
    I also tried launching gnuplot by specifying a plot command: ~-p -e
-   plot sin(x)~ as ~\'("-p" "-e" "plot sin(x)")~.  This did not help:
+   plot sin(x)~ as ~\'("-persist" "-e" "plot sin(x)")~.  This did not
+   help:
    |       | ~:wait~ | Hangs? | CPU usage | Creates Plot? | Accepts Input?    |
    |-------+---------+--------+-----------+---------------+-------------------|
    | SBCL  | ~nil~   | No     |         0 | No            | Broken Pipe Error |
@@ -65,7 +73,7 @@
    |       | ~t~     | No     |        0% | Yes           | Yes               |
 
 
-** Effects of the DISPLAY variable in SBCL/lINUX
+** Effects of the DISPLAY variable in SBCL/Linux
    I considered whether the problem on sbcl is that DISPLAY is not
    correctly set.  I tried setting the DISPLAY value to ":0.0" by
    using the following code snippet to set the ~environment~ keyword:

@@ -1,3 +1,9 @@
+2012-11-20  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp (*native-external-program*): New variable
+	controls compilation of START-GNUPLOT
+	(start-gnuplot): Cleaned up code, documentation, and code comments.
+
 2012-11-07  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* gnuplot-interface-package-def.lisp: Pushing

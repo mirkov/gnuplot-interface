@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-11-07 17:11:20 gnuplot-interface.lisp>
+;; Time-stamp: <2012-11-20 10:30:49EST gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -37,7 +37,16 @@ gnuplot")
 (defparameter *windows* nil "a-list of gnuplot streams and names")
 (defparameter *windows-history* nil "list of most recently used windows")
 ;; my streams
+(defparameter *native-external-program* t
+  "Controls compilation of the START-GNUPLOT command
 
+If T, we use SBCL and CLISP native commands for starting the gnuplot
+process.  If NIL we use the EXTERNAL-PROGRAM package to start the
+process.
+
+Currently, we use native commands as I could not figure out a uniform
+way of starting gnuplot across platforms.  See code documentation in
+START-GNUPLOT")
 
 (defparameter *executable*
   #+(and unix
@@ -68,54 +77,26 @@ gnuplot")
 
 (defun start-gnuplot ()
   "Start gnuplot executable and initialize input stream.  Also create
-the *command* broadcast stream
-
-Return multiple values the *gnuplot* executable and the *command*
-stream"
+the *command* broadcast stream.
+"
   (setf *command-copy* (make-string-output-stream))
-  ;; we use external-program:run instead of external-program:start.
-  ;;
-  ;; We specify 
+
+;;; I currently use native facilities for starting the gnuplot
+;;; process.  Note that in SBCL I set :WAIT to NIL and in CLISP I set
+;;; :WAIT to T.  Otherwise the processes will hang or consume 100% of
+;;; CPU.
   #+(and native-external-program
 	 sbcl)
   (setf
    *gnuplot*
    (sb-ext:run-program
-    *executable* nil
+    "/usr/bin/gnuplot" nil ;;'("-persist" "-e" "plot sin(x)")
     :wait nil
     :input :stream
     :output :stream
     :error :output)
    *gnuplot-input* (sb-ext:process-input *gnuplot*)
    *gnuplot-output* (sb-ext:process-output *gnuplot*))
-  #+(and sbcl
-	 external-program)
-  (multiple-value-bind (io-stream)
-      (external-program:start *executable* nil ;;'("-p" "-e" "plot sin(x)")
-			      :input :stream
-			      :output :stream)
-    (declare (ignore result))
-    (setf *gnuplot-input* (two-way-stream-output-stream io-stream)
-	  *gnuplot-output* (two-way-stream-input-stream io-stream)))
-  #+(and external-program
-	 (and clisp cygwin))
-  (setf *gnuplot* (external-program:start *executable* nil ;;'("-p" "-e" "plot sin(x)")
-					  :input :stream
-					  :output :stream)
-	*gnuplot-input* (external-program:process-input-stream *gnuplot*)
-  	*gnuplot-output* (external-program:process-output-stream *gnuplot*))
-  #+skip(multiple-value-bind (result io-stream)
-	    (external-program:run *executable* nil ;;'("-p" "-e" "plot sin(x)")
-				  :input :stream
-				  :output :stream)
-	  (declare (ignore result))
-	  (setf *gnuplot-input* (two-way-stream-output-stream io-stream)
-		*gnuplot-output* (two-way-stream-input-stream io-stream)))
-  ;; Historical note: In prior versions, on clisp I used
-  ;; ext:run-program.  I had to set :wait to nil in order for the
-  ;; command to work.  I moved to the external-program package, hoping
-  ;; to be more universal.  But as of 2012-05-31, its code did not
-  ;; work with SBCL.  It would just hang
   #+(and native-external-program
 	 (and clisp cygwin))
   (multiple-value-setq (*io* *gnuplot-output* *gnuplot-input*)
@@ -124,6 +105,16 @@ stream"
 		     :input :stream
 		     :output :stream
 		     :wait t))
+
+;;; The following does not work uniformly across SBCL and CLISP.  I
+;;; leave it here as documentation to use when I learn what is causing
+;;; the issue between SBCL and CLISP.
+  #+external-program
+  (setf *gnuplot* (external-program:start *executable* nil ;;'("-p" "-e" "plot sin(x)")
+					  :input :stream
+					  :output :stream)
+	*gnuplot-input* (external-program:process-input-stream *gnuplot*)
+  	*gnuplot-output* (external-program:process-output-stream *gnuplot*))
   (setf *command*
 	(make-broadcast-stream *gnuplot-input* *command-copy*))
   (values))

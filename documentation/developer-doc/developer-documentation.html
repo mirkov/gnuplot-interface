@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
                "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
 <title>Documentation for <code>gnuplot-interface</code> developers</title>
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1"/>
 <meta name="title" content="Documentation for <code>gnuplot-interface</code> developers"/>
 <meta name="generator" content="Org-mode"/>
-<meta name="generated" content="2012-11-07 13:23:28 "/>
+<meta name="generated" content="2012-11-20T10:43-0500"/>
 <meta name="author" content="Mirko Vukovic"/>
 <meta name="description" content=""/>
 <meta name="keywords" content=""/>
@@ -94,22 +94,8 @@
 <h1 class="title">Documentation for <code>gnuplot-interface</code> developers</h1>
 
 
-<div id="table-of-contents">
-<h2>Table of Contents</h2>
-<div id="text-table-of-contents">
-<ul>
-<li><a href="#sec-1">1 On interfacing with external <code>gnuplot</code> processes</a>
-<ul>
-<li><a href="#sec-1-1">1.1 The modes of interacting with <code>gnuplot</code></a></li>
-<li><a href="#sec-1-2">1.2 Effects of setting <code>:wait</code> to <code>T</code></a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-
 <div id="outline-container-1" class="outline-2">
-<h2 id="sec-1"><span class="section-number-2">1</span> On interfacing with external <code>gnuplot</code> processes</h2>
+<h2 id="sec-1">On interfacing with external <code>gnuplot</code> processes</h2>
 <div class="outline-text-2" id="text-1">
 
 
@@ -143,27 +129,43 @@
 </p>
 <p>
   What I discuss below could be due to the fact that I use the Windows
-  version of gnuplot, wgnuplot.  On Windows I link to <code>c:/Program   Files/wgnuplot/bin/gnuplot.exe</code>. 
+  version of gnuplot, wgnuplot.  On Windows I link to <code>c:/Program   Files/wgnuplot/bin/gnuplot.exe</code>.
+</p>
+<p>
+  The testing was done through SLIME.
 </p>
 
 </div>
 
 <div id="outline-container-1-1" class="outline-3">
-<h3 id="sec-1-1"><span class="section-number-3">1.1</span> The modes of interacting with <code>gnuplot</code></h3>
+<h3 id="sec-1-1">The modes of interacting with <code>gnuplot</code></h3>
 <div class="outline-text-3" id="text-1-1">
 
 
+<p>
+   There are two modes of interacting with gnuplot:
+</p><ul>
+<li>launch process and pass commands to it
+</li>
+<li>write sequence of commands to file, and start gnuplot command to
+     process the file
+</li>
+</ul>
+
+
+
+<p>     
+   The drawback of the latter approach is that in case of plotting
+   data from a file, I have to read a file, write the data to another
+   file, and for gnuplot to read that other file.  This will create a
+   noticeable delay for very large data files that I sometimes
+   encounter.  It is true that I could use <code>awk</code> inside the gnuplot
+   command (as shown <a href="http://stackoverflow.com/questions/12846717/using-awk-or-other-shell-command-inside-gnuplot-function">here</a>.  But <code>awk</code> cannot handle binary files.
+</p>
 <p>   
    My operating mode is to start a process, and then send it a
-   succession of commands.  Thus, I can set gnuplot's state to persist
-   from command to command.
+   succession of commands.  
 </p>
-<p>
-   Another alternative is to start a process for each individual plot,
-   sending it a command at invocation while specifying the window to
-   persist.
-</p>
-
 <p>
    On both SBCL and Clisp, I launch the external program, setting
    <code>:wait</code> to <code>NIL</code>.  Otherwise, I get a broken pipe error.  On SBCL, I
@@ -176,7 +178,7 @@
 </div>
 
 <div id="outline-container-1-2" class="outline-3">
-<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Effects of setting <code>:wait</code> to <code>T</code></h3>
+<h3 id="sec-1-2">Effects of setting <code>:wait</code> to <code>T</code></h3>
 <div class="outline-text-3" id="text-1-2">
 
 
@@ -195,15 +197,16 @@
 <tr><td class="left"></td><td class="left"><code>t</code></td><td class="left">Yes</td><td class="right">0</td><td class="left">Broken Pipe Error</td></tr>
 </tbody>
 <tbody>
-<tr><td class="left">CLISP</td><td class="left"><code>nil</code></td><td class="left">No</td><td class="right">0%</td><td class="left">Yes</td></tr>
-<tr><td class="left"></td><td class="left"><code>t</code></td><td class="left">No</td><td class="right">100%</td><td class="left">Broken Pipe Error</td></tr>
+<tr><td class="left">CLISP</td><td class="left"><code>nil</code></td><td class="left">No</td><td class="right">100%</td><td class="left">Broken Pipe Error</td></tr>
+<tr><td class="left"></td><td class="left"><code>t</code></td><td class="left">No</td><td class="right">0%</td><td class="left">Yes</td></tr>
 </tbody>
 </table>
 
 
 
 <p>
-   I also tried launching gnuplot by specifying a plot command: <code>-p -e    plot sin(x)</code> as <code>\'("-p" "-e" "plot sin(x)")</code>.  This did not help:
+   I also tried launching gnuplot by specifying a plot command: <code>-p -e    plot sin(x)</code> as <code>\'("-persist" "-e" "plot sin(x)")</code>.  This did not
+   help:
 </p><table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
 <caption></caption>
 <colgroup><col class="left" /><col class="left" /><col class="left" /><col class="right" /><col class="left" /><col class="left" />
@@ -221,15 +224,74 @@
 </tbody>
 </table>
 
+
+
 </div>
+
+</div>
+
+<div id="outline-container-1-3" class="outline-3">
+<h3 id="sec-1-3">Effects of the DISPLAY variable in SBCL/Linux</h3>
+<div class="outline-text-3" id="text-1-3">
+
+<p>   I considered whether the problem on sbcl is that DISPLAY is not
+   correctly set.  I tried setting the DISPLAY value to ":0.0" by
+   using the following code snippet to set the <code>environment</code> keyword:
+</p>
+
+
+<pre class="src src-lisp">(<span style="color: #859900;">let</span> ((env
+       (remove-if (<span style="color: #859900;">lambda</span> (name=value)
+                    (not (zerop (mismatch name=value <span style="color: #2aa198;">"DISPLAY="</span> <span style="color: #859900;">:test</span> #'char=)))) 
+                  (sb-ext:posix-environ))))
+  (push <span style="color: #2aa198;">"DISPLAY=0.0"</span> env)
+  env)
+</pre>
+
+<p>
+   That did not help.
+</p>
+
+
+
+</div>
+
+</div>
+
+<div id="outline-container-1-4" class="outline-3">
+<h3 id="sec-1-4">Regarding the usage of <code>external-program</code></h3>
+<div class="outline-text-3" id="text-1-4">
+
+<p>   Because of the conflicting behavior of gnuplot with respect to the
+   <code>:wait</code> value, I have to use system-specific interfaces.
+</p>
+
+
+</div>
+</div>
+
+</div>
+
+<div id="outline-container-2" class="outline-2">
+<h2 id="sec-2">How other libraries do it</h2>
+<div class="outline-text-2" id="text-2">
+
+<ul>
+<li>Garry Kings <a href="http://www.cliki.net/CLNUPlot">CLNUPlot</a> generates a file with gnuplot commands and
+    launches gnuplot from a shell command
+</li>
+<li><a href="http://clocc.sourceforge.net/dist/cllib.html">CLLIB</a> interfaces to gnuplot, but I was not able to decipher how.
+</li>
+</ul>
+
 </div>
 </div>
 </div>
 
 <div id="postamble">
-<p class="date">Date: 2012-11-07 13:23:28 </p>
+<p class="date">Date: 2012-11-20T10:43-0500</p>
 <p class="author">Author: Mirko Vukovic</p>
-<p class="creator">Org version 7.8.03 with Emacs version 23</p>
+<p class="creator">Org version 7.8.06 with Emacs version 23</p>
 <a href="http://validator.w3.org/check?uri=referer">Validate XHTML 1.0</a>
 
 </div>
