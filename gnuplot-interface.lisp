@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-11-20 10:30:49EST gnuplot-interface.lisp>
+;; Time-stamp: <2012-11-21 09:03:12EST gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -49,7 +49,10 @@ way of starting gnuplot across platforms.  See code documentation in
 START-GNUPLOT")
 
 (defparameter *executable*
+  #+darwin
+  (probe-file "/opt/local/bin/gnuplot")
   #+(and unix
+	 (not darwin)
 	 (not (and clisp wgnuplot)))
   (or (probe-file "/usr/local/bin/gnuplot")
       "/usr/bin/gnuplot")
@@ -90,7 +93,7 @@ the *command* broadcast stream.
   (setf
    *gnuplot*
    (sb-ext:run-program
-    "/usr/bin/gnuplot" nil ;;'("-persist" "-e" "plot sin(x)")
+    *executable* nil ;;'("-persist" "-e" "plot sin(x)")
     :wait nil
     :input :stream
     :output :stream

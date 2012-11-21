@@ -33,7 +33,8 @@ Low level interface to =gnuplot= that provides:
   - Windows & Cygwin & CLISP
     - =wgnuplot=
     - =gnuplot= was not tested in a while as I cannot get X11 on my
-      Windows machines.
+      Windows machines
+  - MacOS (Darwin + macports' gnuplot)
   
 * Cygwin and =wgnuplot=
   For use of Cygwin and =wgnuplot=, one needs to provide the feature
