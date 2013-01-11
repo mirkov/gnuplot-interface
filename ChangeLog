@@ -1,3 +1,16 @@
+2013-01-11  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp (send-line): Modified to only send line,
+	without flushing output.  Flushing output is done with
+	`finish-command'
+	(finish-command): New function
+
+2013-01-06  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp (gnuplot-for-windows-p)
+	(filename-normalizer): Functions for normalizing pathnames for
+	underlying OS
+
 2012-11-21  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* gnuplot-interface.lisp (start-gnuplot): Fixed bug in sbcl.  Now

@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2012-11-21 09:03:12EST gnuplot-interface.lisp>
+;; Time-stamp: <2013-01-11 14:00:45Eastern Standard Time gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -157,19 +157,43 @@ the *command* broadcast stream.
   "Alias for COMMAND"
   (apply #'command args))
 
+(defun send-string (string)
+  "Send a string to gnuplot
+
+Do not send line return
+Do not attempt to flush the buffer"
+  (princ string *command*))
+
 (defun send-line (string)
   "Pass a single line to the gnuplot stream
 
-This command is used to pass complex, multi-line input to gnuplot.
-For it to take effect, the sequence of SEND-LINE commands must be
-finished by the SEND-LINE-BREAK command."
+Send a line return
+Do not attempt to flush the buffer
+
+This command is used to pass complex, multi-line input to gnuplot."
   (princ string *command*)
-  (finish-output *command*))
+  (princ (format nil "~%") *command*)
+  #+skip(finish-output *command*))
+
+
 
 (defun send-line-break ()
-  "Send a line break"
+  "Send a line break.
+
+Do not attempt to flush the buffer"
+  (princ (format nil "~%") *command*)
+  #+skip(finish-output *command*))
+
+(defun flush-buffer ()
+  "Flush buffer"
+  (finish-output *command*))
+
+(defun finish-command ()
+  "Send line-break and flush stream"
   (princ (format nil "~%") *command*)
   (finish-output *command*))
+
+
 (defun send-line-to-gnuplot (string)
   (send-line string))
 (defun send-line-break-to-gnuplot ()
@@ -226,4 +250,25 @@ finished by the SEND-LINE-BREAK command."
   (reset))
 
 
+(defun gnuplot-for-windows-p ()
+  "Return true if running gnuplot for windows"
+  (search "Program Files" gpi::*executable*))
 
+(defun normalize-namestring (path)
+  "Normalize namestring to underlying OS
+
+This function is used when running clisp on cygwin and Gnuplot for windows"
+  #+cygwin
+  (if (gnuplot-for-windows-p)
+      (let ((stream
+	     (ext:run-shell-command
+	      (concatenate 'string
+			   "cygpath -m "
+			   (namestring path))
+	      :output :stream)))
+	(prog1
+	    (read-line stream)
+	  (close stream)))
+      (namestring path))
+  #-cygwin
+  (namestring path))
