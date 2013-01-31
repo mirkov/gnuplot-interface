@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2011-10-04 12:47:59 examples.lisp>
+;; Time-stamp: <2013-01-31 13:54:25Eastern Standard Time examples.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -29,16 +29,11 @@
   "Example of a plot with inlined data.  This example also illustrates
 the use of sending a line break"
   (send-line "plot '-' with lines")
-  (send-line (format nil "~%"))
   (send-line "5")
-  (send-line (format nil "~%"))
   (send-line "12")
-  (send-line-break)
   (send-line "-8")
-  (send-line-break)
   (send-line "e")
-  (send-line-break)
-  (send-line-break))
+  (finish-output *command*))
 
 (defun plot-fun (numbers function)
   "Given a list of numbers `numbers' and a `function', generate a
@@ -46,22 +41,16 @@ plot
 
 This example shows how to make a plot of x vs y using the inlined data"
   (send-line "plot '-' using 1:2 with lines")
-  (send-line-break)
   (dolist (x numbers)
-    (send-line (format nil "~a ~a" x (funcall function x)))
-    (send-line-break))
-  (send-line "e")
-  (send-line-break)
-  (send-line-break))
+    (send-line (format nil "~a ~a" x (funcall function x))))
+  (send-line #\e)
+  (finish-output *command*))
 
 (defun plot-combo (numbers function)
   "This example builds upon `plot-fun'.  Along with the function plot, it overplots gnuplot's cos(x)"
-  (send-line "plot '-' using 1:2 with lines")
+  (send-line "plot '-' using 1:2 with lines" t)
   (send-line ", cos(x)")
-  (send-line-break)
   (dolist (x numbers)
-    (send-line (format nil "~a ~a" x (funcall function x)))
-    (send-line-break))
-  (send-line "e")
-  (send-line-break)
-  (send-line-break))
+    (send-line (format nil "~a ~a" x (funcall function x))))
+  (send-line #\e)
+  (finish-output *command*))

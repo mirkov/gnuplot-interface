@@ -20,10 +20,12 @@
    :reset :gnuplot-reset 
    :stop :stop-gnuplot
    :command :gnuplot-command
-   :echo-command :gnuplot-echo-command
-	   
-   :send-line :finish-command :send-line-to-gnuplot
-   :send-line-break :send-line-break-to-gnuplot
+
+   ;; low level commands
+   :send-command :send-line :finish-command :send-line-break
+
+   ;; debugging
+   :with-captured-gnuplot-input :*gnuplot-input-string*
 
    :*terminal*
    :normalize-namestring)

@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2013-01-11 14:00:45Eastern Standard Time gnuplot-interface.lisp>
+;; Time-stamp: <2013-01-31 13:57:18Eastern Standard Time gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -29,7 +29,7 @@ gnuplot")
 (defparameter *gnuplot-input* nil "lisp output to the gnuplot stream")
 (defparameter *io* nil "gnuplot bidirectional stream")
 (defparameter *error* nil "gnuplot error stream") ;; not used
-(defparameter *command-copy* (make-string-output-stream)
+#+skip(defparameter *command-copy* (make-string-output-stream)
   "Receives a copy of gnuplot commands")
 (defparameter *command* nil "Stream used to send commands")
 
@@ -82,7 +82,7 @@ START-GNUPLOT")
   "Start gnuplot executable and initialize input stream.  Also create
 the *command* broadcast stream.
 "
-  (setf *command-copy* (make-string-output-stream))
+  #+skip(setf *command-copy* (make-string-output-stream))
 
 ;;; I currently use native facilities for starting the gnuplot
 ;;; process.  Note that in SBCL I set :WAIT to NIL and in CLISP I set
@@ -118,8 +118,7 @@ the *command* broadcast stream.
 					  :output :stream)
 	*gnuplot-input* (external-program:process-input-stream *gnuplot*)
   	*gnuplot-output* (external-program:process-output-stream *gnuplot*))
-  (setf *command*
-	(make-broadcast-stream *gnuplot-input* *command-copy*))
+  (setf *command* *gnuplot-input*)
   (values))
 
 
@@ -139,15 +138,30 @@ the *command* broadcast stream.
       (close *gnuplot-input*)
       ;;(close *io*)
       (close *command*)
-      (close *command-copy*))))
+      #+skip(close *command-copy*))))
 
 (defun stop ()
   "Alias for STOP-GNUPLOT"
   (stop-gnuplot))
 
+(defparameter *gnuplot-input-string* ""
+  "Stores command string sent to gnuplot" )
+
+(defmacro with-captured-gnuplot-input (&body body)
+  "Execute body while capturing commands sent to *command* into 
+*gnuplot-input-string*"
+  `(let* ((copy-stream (make-string-output-stream))
+	  (command-stream (make-broadcast-stream *gnuplot-input*
+						 copy-stream)))
+     (let ((*command* command-stream))
+       (unwind-protect
+	    ,@body
+	 (setf *gnuplot-input-string* (get-output-stream-string copy-stream))
+	 (close copy-stream)))))
+
 (defun command (&rest command-and-args)
   "Pass `command-and-args' to the *command* stream"
-#|  (get-output-stream-string *command-copy*)|#
+  #+skip(get-output-stream-string *command-copy*)
   (when command-and-args
     (apply #'format  *command* command-and-args)
     (format *command* "~%")
@@ -164,16 +178,19 @@ Do not send line return
 Do not attempt to flush the buffer"
   (princ string *command*))
 
-(defun send-line (string)
+(defun send-line (string &optional continuation)
   "Pass a single line to the gnuplot stream
 
 Send a line return
+
+If CONTINUATION is T also append the \ character
 Do not attempt to flush the buffer
 
 This command is used to pass complex, multi-line input to gnuplot."
   (princ string *command*)
-  (princ (format nil "~%") *command*)
-  #+skip(finish-output *command*))
+  (when continuation (princ #\\ *command*))
+  (princ "
+" *command*))
 
 
 
@@ -181,8 +198,8 @@ This command is used to pass complex, multi-line input to gnuplot."
   "Send a line break.
 
 Do not attempt to flush the buffer"
-  (princ (format nil "~%") *command*)
-  #+skip(finish-output *command*))
+  (princ (format nil "
+") *command*))
 
 (defun flush-buffer ()
   "Flush buffer"
@@ -190,7 +207,8 @@ Do not attempt to flush the buffer"
 
 (defun finish-command ()
   "Send line-break and flush stream"
-  (princ (format nil "~%") *command*)
+  (princ "
+" *command*)
   (finish-output *command*))
 
 
@@ -200,11 +218,11 @@ Do not attempt to flush the buffer"
   (send-line-break))
 
 
-(defun echo-command ()
+#+skip(defun echo-command ()
   "Return the last command sent to " 
   (get-output-stream-string *command-copy*))
 
-(defun gnuplot-echo-command ()
+#+skip(defun gnuplot-echo-command ()
   (echo-command))
 
 (defun init-gnuplot ()
@@ -227,7 +245,7 @@ Do not attempt to flush the buffer"
 	*io* nil
 	*windows* nil
 	*windows-history* nil
-	*command-copy* nil
+	;;*command-copy* nil
 	*command* nil ))
 
 

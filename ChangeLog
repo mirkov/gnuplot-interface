@@ -1,3 +1,25 @@
+2013-01-31  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* examples.lisp: Updated and cleaned up examples
+
+	* gnuplot-interface.lisp (echo-command, gnuplot-echo-command
+	*command-copy*): Removed these commands and special variable.
+	Command echoing is now handled with the
+	with-captured-gnuplot-input macro
+	(with-captured-gnuplot-input): New macro that replaces the
+	functionality of echo commands
+
+
+	* gnuplot-interface.asd (#:gnuplot-interface): Removed
+	"gnuplot-interface" from the components list.  The streams in that
+	file are out of date
+
+	* gnuplot-interface.lisp (command): Enabled
+	`get-output-stream-string' to clear the echo buffer.  This buffer
+	would overflow after plotting large data sets.  I may want to
+	reconsider stream architecture.  Maybe I should disable the echo,
+	and enable it only when required.
+
 2013-01-11  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* gnuplot-interface.lisp (send-line): Modified to only send line,
