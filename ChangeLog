@@ -1,8 +1,14 @@
 2014-10-11  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
+	* README.org: Updated documentation to the new structure-based
+	user-setup.
+
 	* gnuplot-interface.lisp (default-terminal): New function with
 	error checking.
 	(start-gnuplot): Added code-block for CCL
+	(:default-terminal executable-path): Modified to query the
+	structure defined in user-setup.  The user interface can still be
+	improved.
 
 2014-10-04  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 

@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2014-10-09 11:26:03Eastern Daylight Time gnuplot-interface.lisp>
+;; Time-stamp: <2014-10-11 12:10:15Eastern Daylight Time gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -65,7 +65,7 @@ START-GNUPLOT")
 		(probe-file "/usr/bin/gnuplot"))
 	    ;; cygwin and windows gnuplot (wgnuplot)
 	    #+wgnuplot ;; implies windows
-	    (getf (symbol-plist user-setup::*gnuplot*) :executable)
+	    (user-setup:gnuplot-executable user-setup:*gnuplot-setup*)
 	    )))
     (let ((path (case (length candidates)
 		  (0 (error "No paths to GNUPLOT executable - check gnuplot-interface.lisp"))
@@ -92,7 +92,7 @@ Check gnuplot-interface.lisp" candidates)))))
 	    ;; cygwin+clisp+wgnuplot supports WXT
 	    #+(and cygwin clisp wgnuplot) 'wxt
 	    ;; CCL+wgnuplot does not support WXT only WINDOWS
-	    #+(and ccl wgnuplot) 'windows
+	    #+(and ccl wgnuplot) (user-setup:gnuplot-terminal user-setup:*gnuplot-setup*)
 	    )))
       (let ((term (case (length term-candidates)
 		    (0 (error "No default terminal selected - check gnuplot-interface.lisp"))

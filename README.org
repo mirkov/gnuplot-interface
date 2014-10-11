@@ -34,28 +34,37 @@ Low level interface to =gnuplot= that provides:
     - =wgnuplot=
     - =gnuplot= was not tested in a while as I cannot get X11 on my
       Windows machines
-  - MacOS (Darwin + macports' gnuplot)
+  - Windows & CCL
+
   
-* Cygwin and =wgnuplot=
-  For use of Cygwin and =wgnuplot=, one needs to provide the feature
-  =:wgnuplot=.  Furthermore, one needs to specify the path to the
-  ~gnuplot.exe~ console executable.  This is done via =:wgnuplot='s
-  property list:
-#+BEGIN_SRC lisp
-(setf (symbol-plist :wgnuplot)
-   (list :executable "posix compliant path to executable"))
-#+END_SRC
-For example, the path can be:
-#+BEGIN_QUOTE
-"/c/Program\\ Files/wgnuplot/bin/gnuplot.exe"
-#+END_QUOTE
 
-The ~:wgnuplot~ p-list has to be set-up prior to loading
-~gnuplot-interface~.  The executable path has to be enclosed in quotes
-because of the space.  The double backslash is not sufficient.
+* Installation on Windows
 
-If the path is changed during a lisp session, the ~*executable*
-variable has to be set to the new path.
+  Interacting with GNUPlot on Windows does not seem as straightforward
+  as on Linux/Darwin.
+
+  For that I introduced a user-setup package in which the user defines
+  the path to the gnuplot executable and terminal.
+
+  Currently this is best described by code.  In the =lisrrc= (or
+  equivalent) file the following needs to be execute in the
+  =user-setup= package (make sure the package is defined before this).
+  #+BEGIN_SRC lisp
+    (in-package :user-setup)
+
+    (eval-when (:compile-toplevel :load-toplevel :execute)
+      (defstruct (gnuplot-setup (:conc-name gnuplot-)) executable terminal))
+
+    (defparameter user-setup::*gnuplot-setup* (make-gnuplot-setup))
+
+    (setf (gnuplot-executable *gnuplot-setup*) "E:/GNUPLOT/BIN/GNUPLOT.EXE"
+          (gnuplot-terminal *gnuplot-setup*) :WINDOWS)
+
+    (export '(*gnuplot-setup* gnuplot-executable gnuplot-terminal) 'user-setup)
+  #+END_SRC
+
+  
+
 
 * Caveats
 - stream plumbing is not thoroughly tested
