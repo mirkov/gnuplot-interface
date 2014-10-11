@@ -1,5 +1,5 @@
 ;; Mirko Vukovic
-;; Time-stamp: <2013-01-31 13:57:18Eastern Standard Time gnuplot-interface.lisp>
+;; Time-stamp: <2014-10-09 11:26:03Eastern Daylight Time gnuplot-interface.lisp>
 ;; 
 ;; Copyright 2011 Mirko Vukovic
 ;; Distributed under the terms of the GNU General Public License
@@ -21,8 +21,8 @@
 
 
 
-(defparameter *gnuplot* "Value returned by the command that invokes
-gnuplot")
+(defparameter *gnuplot* nil
+  "The gnuplot process")
 
 ;; streams returned by the external processes
 (defparameter *gnuplot-output* nil "input from the gnuplot stream to lisp")
@@ -48,33 +48,72 @@ Currently, we use native commands as I could not figure out a uniform
 way of starting gnuplot across platforms.  See code documentation in
 START-GNUPLOT")
 
-(defparameter *executable*
-  #+darwin
-  (probe-file "/opt/local/bin/gnuplot")
-  #+(and unix
-	 (not darwin)
-	 (not (and clisp wgnuplot)))
-  (or (probe-file "/usr/local/bin/gnuplot")
-      "/usr/bin/gnuplot")
-  #+(and clisp (not wgnuplot)) "gnuplot"
-  #+(and clisp wgnuplot)
-  (getf (symbol-plist :wgnuplot) :executable)
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun executable-path ()
+    "Return path to the executable"
+    (let ((candidates
+	   (list
+	    ;; Darwin
+	    #+darwin
+	    (probe-file "/opt/local/bin/gnuplot")
+	    ;; Pure unix (not cygwin using windows gnuplot)
+	    #+(and unix
+		   (not darwin)
+		   (not wgnuplot))
+	    (or (probe-file "/usr/local/bin/gnuplot")
+		(probe-file "/usr/bin/gnuplot"))
+	    ;; cygwin and windows gnuplot (wgnuplot)
+	    #+wgnuplot ;; implies windows
+	    (getf (symbol-plist user-setup::*gnuplot*) :executable)
+	    )))
+    (let ((path (case (length candidates)
+		  (0 (error "No paths to GNUPLOT executable - check gnuplot-interface.lisp"))
+		  (1 (car candidates))
+		  (t (error "Found more than one candidate path: ~a 
+Check gnuplot-interface.lisp" candidates)))))
+      (assert (stringp path) ()
+	      "Path ~a must be a string or path" path)
+      (assert (probe-file path) ()
+	      "Executable ~a does exist" path)
+      path))))
+
+(defparameter *executable* (executable-path)
   "Path to the executable")
 
-(defparameter *terminal*
-  #+(and cygwin (not wgnuplot)) 'x11
-  #+(and x11 (not cygwin)) 'wxt
-  #+(and clisp wgnuplot) 'wxt
-  #+(and unix
-	 (not (and clisp wgnuplot))) 'x11
+
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun default-terminal ()
+    (let ((term-candidates
+	   (list
+	    #+darwin nil
+	    #+(and x11 (not cygwin)) 'wxt
+	    ;; cygwin+clisp+wgnuplot supports WXT
+	    #+(and cygwin clisp wgnuplot) 'wxt
+	    ;; CCL+wgnuplot does not support WXT only WINDOWS
+	    #+(and ccl wgnuplot) 'windows
+	    )))
+      (let ((term (case (length term-candidates)
+		    (0 (error "No default terminal selected - check gnuplot-interface.lisp"))
+		    (1 (car term-candidates))
+		    (t (error "Found more than one terminal candidate: ~a 
+Check gnuplot-interface.lisp" term-candidates)))))
+	(assert term ()
+		"Terminal is undefined (set to nil) -- edit source file to fix this")
+	term))))
+
+(defparameter *terminal* (default-terminal)
   "Default gnuplot terminal")
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  #+(and cygwin (not wgnuplot)) (when (string= "" (sys::getenv "DISPLAY"))
-	    (sys::setenv "DISPLAY" "127.0.0.1:0.0"))
-  #+sbcl (unless (sb-ext:posix-getenv "DISPLAY")
-	   (warn "DISPLAY is not set.  X11 terminal will not be operational" ))
+  #+(and (or unix darwin))
+  (when (string= "" (uiop/os:getenv "DISPLAY"))
+    #+sbcl (sb-ext:posix-setenv "DISPLAY" "127.0.0.1:0.0")
+    #+clisp (setf (ext:getenv "DISPLAY") "127.0.0.1:0.0")
+    #+ccl (ccl:setenv "DISPLAY") "127.0.0.1:0.0")
   )
+
 
 
 
@@ -82,12 +121,29 @@ START-GNUPLOT")
   "Start gnuplot executable and initialize input stream.  Also create
 the *command* broadcast stream.
 "
+  (assert (uiop/os:getenv "DISPLAY") ()
+	  "DISPLAY  environemnt variable not set.  Exiting
+Check gnuplot-interface.lisp")
   #+skip(setf *command-copy* (make-string-output-stream))
 
 ;;; I currently use native facilities for starting the gnuplot
 ;;; process.  Note that in SBCL I set :WAIT to NIL and in CLISP I set
 ;;; :WAIT to T.  Otherwise the processes will hang or consume 100% of
 ;;; CPU.
+  #+(and native-external-program windows ccl)
+  (setf *gnuplot*
+	(ccl:run-program ;;"cmd.exe"
+			 ;;(list *executable*)
+	 ;;(format nil "\"~a\"" *executable*)
+	 *executable*
+	 #+skip nil
+	 '("-p" "-e" "plot sin(x)")
+			 :wait nil
+			 :input :stream
+			 :output :stream
+			 :error :output)
+	*gnuplot-input* (ccl:external-process-input-stream *gnuplot*)
+	*gnuplot-output* (ccl:external-process-output-stream *gnuplot*))
   #+(and native-external-program
 	 sbcl)
   (setf
@@ -126,6 +182,9 @@ the *command* broadcast stream.
   "Stop gnuplot and close all the streams"
   (unwind-protect
   (command "quit")
+    #+ccl
+    (progn
+      )
     #+sbcl
     (progn
     ;;(close *gnuplot-output*)

@@ -1,3 +1,15 @@
+2014-10-11  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp (default-terminal): New function with
+	error checking.
+	(start-gnuplot): Added code-block for CCL
+
+2014-10-04  Mirko Vukovic  <mirko.vukovic@us.tel.com>
+
+	* gnuplot-interface.lisp (executable-path): New function with some
+	error checking to flag some errors if the path is not properly
+	defined.
+
 2013-01-31  Mirko Vukovic  <mirko.vukovic@us.tel.com>
 
 	* examples.lisp: Updated and cleaned up examples
